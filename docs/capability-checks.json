@@ -1,0 +1,158 @@
+{
+  "schema_version": 1,
+  "observed_date_utc": "2026-11-11",
+  "scope": "Read-only local tooling and Azure provider metadata; no resource provisioning",
+  "qualification": "Inventory is not compatibility, provenance, licensing or release approval.",
+  "checks": [
+    {
+      "id": "local.python",
+      "command": "python3.13 --version",
+      "status": "observed",
+      "version": "3.13.18"
+    },
+    {
+      "id": "local.dotnet",
+      "command": "dotnet --list-sdks",
+      "status": "observed",
+      "versions": ["8.0.419", "10.0.102", "10.0.200"]
+    },
+    {
+      "id": "local.azure-cli",
+      "command": "az version --output json",
+      "status": "observed",
+      "version": "2.90.0",
+      "installed_extensions": ["application-insights", "resource-graph"]
+    },
+    {
+      "id": "local.bicep",
+      "command": "az bicep version",
+      "status": "observed",
+      "version": "0.45.15"
+    },
+    {
+      "id": "local.frontend",
+      "commands": ["node --version", "npm --version"],
+      "status": "observed",
+      "node_version": "26.13.0",
+      "npm_version": "11.20.0"
+    },
+    {
+      "id": "local.copilot",
+      "command": "copilot --version",
+      "status": "observed",
+      "version": "1.0.106",
+      "limitation": "No model turn, SDK callback, session recovery or permission enforcement probe executed."
+    },
+    {
+      "id": "local.copilot-telemetry-help",
+      "command": "copilot --no-auto-update help monitoring",
+      "status": "documented_by_installed_cli",
+      "observations": [
+        "Help documents opt-in telemetry and OTLP HTTP JSON/protobuf options.",
+        "Help documents file export and managed header-provider precedence."
+      ],
+      "limitation": "Help is not producer coverage, raw-log delivery or audit completeness evidence."
+    },
+    {
+      "id": "local.squad",
+      "command": "squad --help",
+      "status": "observed",
+      "version": "0.13.1"
+    },
+    {
+      "id": "local.squad-resolution",
+      "command": "squad status",
+      "status": "observed",
+      "observation": "Repository Squad configuration is selected."
+    },
+    {
+      "id": "local.squad-doctor",
+      "command": "squad doctor",
+      "status": "blocked",
+      "reported_pass_count": 7,
+      "reported_failure_count": 2,
+      "reported_info_count": 2,
+      "blockers": [
+        "Missing .squad/decisions.md.",
+        "Missing .github/agents/squad.agent.md."
+      ],
+      "limitation": "Command returned zero despite reported failures; inspect diagnostic status, not exit status alone."
+    },
+    {
+      "id": "local.squad-health",
+      "command": "squad health --json",
+      "status": "blocked",
+      "exit_code": 1,
+      "blockers": ["Fact Checker registry key is not lowercase kebab-case."],
+      "limitation": "No required environment inputs are declared in existing Squad configuration."
+    },
+    {
+      "id": "azure.account",
+      "command": "az account show --query '{state:state,isDefault:isDefault}' --output json",
+      "status": "observed",
+      "observation": "An enabled default account is selected.",
+      "limitation": "Does not establish the authorized target subscription, project, region or deployment rights."
+    },
+    {
+      "id": "azure.sandbox-cli",
+      "command": "az containerapp sandbox --help",
+      "status": "blocked",
+      "observation": "Installed CLI does not recognize the sandbox subcommand.",
+      "limitation": "Does not establish service unavailability; no dynamic extension installation was allowed."
+    },
+    {
+      "id": "azure.sandbox-provider",
+      "command": "az provider show --namespace Microsoft.App with projection to registration state and sandbox type metadata",
+      "status": "observed",
+      "registration_state": "Registered",
+      "resource_types": [
+        {
+          "type": "sandboxes",
+          "api_versions": ["2026-02-01-preview"],
+          "advertised_locations": [
+            "North Central US (Stage)",
+            "Canada Central",
+            "Central US EUAP"
+          ]
+        },
+        {
+          "type": "sandboxGroups",
+          "api_versions": ["2026-07-01", "2026-02-01-preview"],
+          "location_summary": "Multiple regions advertised; no pilot region selected or validated."
+        },
+        {
+          "type": "sandboxGroups/vnetConnections",
+          "api_versions": ["2026-07-01", "2026-02-01-preview"],
+          "location_summary": "Multiple regions advertised; no pilot region selected or validated."
+        }
+      ],
+      "limitation": "Resource-type metadata does not validate schemas, data-plane behavior, networking, lifecycle semantics, capacity or quotas."
+    }
+  ],
+  "foundation_verification": {
+    "unit_test_command": "PYTHONDONTWRITEBYTECODE=1 python3.13 -m unittest discover -s tests -p test_preflight.py -v",
+    "tests_passed": 15,
+    "tests_failed": 0,
+    "cli_command": "PYTHONDONTWRITEBYTECODE=1 python3.13 tools/preflight.py",
+    "cli_exit_code": 1,
+    "cli_status": "BLOCKED",
+    "cli_result": "Missing required process inputs and unresolved evidence gates reported without values; no installation or deployment attempted.",
+    "review_status": "Independent Linus code review reported no significant issues or blocking findings for the bounded Stage A foundation. Contracts remain drafts; this is not capability or MVP acceptance."
+  },
+  "unresolved_gates": [
+    "Reviewed shared contracts and independent acceptance evidence",
+    "Authorized pilot subscription, resource scope and region",
+    "Approved feed URLs, authentication and publisher/publication/integrity evidence",
+    "Sandbox private routing, credential injection, identity isolation and snapshot behavior",
+    "CLI/SDK/Squad conformance with deny backstop and nonblocking steering",
+    "Audit source completeness, append retry semantics, signing and approved retention",
+    "Evaluation thresholds, benchmark parameters, budget and recovery objectives",
+    "Existing Squad setup diagnostic failures"
+  ],
+  "side_effects": {
+    "dependencies_installed": false,
+    "resources_provisioned": false,
+    "configuration_values_or_account_identifiers_recorded": false,
+    "continuous_work_loops_started": false
+  }
+}
