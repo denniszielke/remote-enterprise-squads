@@ -12,6 +12,7 @@
 
 | Name | Role | Charter | Status |
 |------|------|---------|--------|
+| Danny | Program Director | `.squad/agents/danny/charter.md` | ✅ Active |
 | Steve | Lead / Architect | `.squad/agents/steve/charter.md` | ✅ Active |
 | Basher | DevOps Engineer | `.squad/agents/basher/charter.md` | ✅ Active |
 | Rusty | Agent Harness Engineer | `.squad/agents/rusty/charter.md` | ✅ Active |
@@ -23,7 +24,7 @@
 | Scribe | Session Logger | `.squad/agents/scribe/charter.md` | 📋 Silent |
 | Ralph | Work Monitor | `.squad/agents/ralph/charter.md` | 🔄 Monitor |
 | Rai | RAI Reviewer | `.squad/agents/rai/charter.md` | 🛡️ RAI |
-| Fact Checker | Fact Checker | `.squad/agents/fact checker/charter.md` | ✅ Active |
+| Fact Checker | Fact Checker | `.squad/agents/fact-checker/charter.md` | ✅ Active |
 
 ## Project Context
 
@@ -31,6 +32,8 @@
 - **Created:** 2026-11-11
 
 ## Workflow & Constraints
+
+- Danny drives program scope, priorities, milestones and decision follow-through with engineering. Steve owns technical architecture and contracts; human approvals and independent governance gates remain unchanged.
 
 - See [`.squad/workflow.md`](./workflow.md) for the ready → claimed → implemented → verified → reviewed → done workflow and ceremonies.
 - See [`.squad/constraints.md`](./constraints.md) for shared engineering constraints, supply-chain rules, and runtime governance boundaries.

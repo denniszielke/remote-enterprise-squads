@@ -1,0 +1,6 @@
+{
+  "chat.agentFilesLocations": {
+    ".copilot/agents": true,
+    ".github/agents": false
+  }
+}
