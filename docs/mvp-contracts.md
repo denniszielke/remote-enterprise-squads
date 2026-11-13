@@ -10,6 +10,8 @@ The architecture-research helper is unavailable; no external platform evidence w
 ## 1. Scope and review boundary
 
 M0/M1: one pilot project/repository/team version, one authoritative session and team writer; a second isolated project is a negative-test fixture.
+The user approved this narrow product scope on 2026-11-12. This is not approval
+of the technical contracts below, capability claims or pilot release.
 All agents execute in ACA Sandboxes; the control plane is not an agent host. No cloud API/schema/flag is invented here.
 P01 remains draft until cross-component review; dependent implementation must not treat draft choices as accepted decisions.
 See the [evidence matrix](./mvp-evidence-matrix.md) for proof obligations, owners and unresolved TDD validation gates (VG).

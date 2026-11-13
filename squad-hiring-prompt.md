@@ -8,6 +8,7 @@ The in-sandbox runner owns the Copilot SDK session, serializes commands and publ
 
 Hire this cast:
 
+- **Danny** - program director; scope, priorities, milestones, dependency coordination and decision follow-through with engineering. Drive recommendations and decisions within approved scope; escalate material scope changes and human approvals without waiving governance gates.
 - **Steve** - lead, architecture, coordination and contract ownership.
 - **Basher** - Bicep for Foundry, VNet/private networking, identities/RBAC, ACR, ACA and supporting Azure resources; Python 3.13 build/deployment automation and remote ACR image builds.
 - **Rusty** - agent harness, Copilot SDK session ownership, steering, AHP and optional ACP.
@@ -24,8 +25,8 @@ Use the installed Squad version's supported initialization and configuration mec
 Create or update only the supported Squad configuration and coordinator integration needed to establish:
 
 1. The team roster and member charters, with responsibilities, boundaries, collaborators and review duties.
-2. Routing rules matching the ownership above: one accountable owner per issue; Steve handles ambiguous or cross-component work; Linus reviews security-sensitive changes; Livingston independently verifies quality and evaluations; Scribe records decisions; Ralph dispatches only dependency-ready, claimed work and never grants approvals.
-3. Planning, contract review, infrastructure What-If, security review, integration demonstration and sprint-close ceremonies.
+2. Routing rules matching the ownership above: one accountable owner per issue; Danny handles program scope, priorities and decision coordination; Steve handles ambiguous technical or cross-component engineering work and contracts; Linus reviews security-sensitive changes; Livingston independently verifies quality and evaluations; Scribe records decisions; Ralph dispatches only dependency-ready, claimed work and never grants approvals.
+3. Program planning and scope/decision review chaired by Danny with Steve's technical input; contract review chaired by Steve; infrastructure What-If, security review, integration demonstration and sprint-close ceremonies. Preserve human authority over material scope changes, spending, deployment, privacy/retention policy and release approval.
 4. The ready -> claimed -> implemented -> verified -> reviewed -> done workflow, including isolated work, independent review and evidence-based completion.
 5. Shared engineering constraints: .NET 10 services, React/TypeScript console, Bicep for persistent infrastructure, Python 3.13 for all automation, macOS-first development and protected local `.env` configuration.
 6. Supply-chain rules: authentic publisher artifacts through approved feeds only; pin and lock direct, transitive, development and build dependencies, with verified upstream publication timestamps strictly earlier than selection time minus seven days. No direct public PyPI/NuGet access or fallback; missing feed configuration or age/provenance evidence blocks installation, not team configuration.

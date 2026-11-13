@@ -1,6 +1,13 @@
 # First MVP implementation proposal
 
 Status: Stage A work started following the user's instruction to get to work. Contracts and capability gates still require review; this proposal is not evidence of delivered MVP capabilities.
+hand
+On 2026-11-12 the user approved the narrow MVP scope and Sweden Central pilot
+authorization, accepted the approved-feed requirement, and assigned a pilot
+administrator/operator. Resource group and spending cap remain unspecified;
+chargeable provisioning is on hold. Actual feed configuration and provenance
+evidence, retention/residency policy and technical contract review remain open.
+These decisions authorize continued implementation, not a passed release gate.
 
 ## 1. Recommendation and basis
 
@@ -211,3 +218,41 @@ command outcomes, conditional permission decisions and lifecycle guards.
 The local no-package .NET Release build passes 13 behavioral cases, alongside
 22 Python tests. This is not a running control plane or closure of the durable
 storage, authorization, SDK, platform or audit validation gates.
+
+The next offline P09 slice adds scoped writer-lease fencing and idempotency
+bindings with five additional behavioral cases. The Release build using existing
+restore assets and independent execution pass all 18 C# cases; 22 Python tests
+also pass. Bounded independent review found no significant aggregate issues.
+The standard offline restore script was denied due to its audit-disable option
+and was not retried. See [development evidence](./docs/development.md) for the
+validation boundary. Durable CAS, authorization and real process containment
+remain unimplemented; this is not P09 completion or MVP approval.
+
+The subsequent command-admission slice adds a mandatory authorization seam,
+fixed-shape semantic fingerprints and atomic idempotency/intent documents,
+plus a package-free Cosmos REST create/read/ETag-CAS adapter. Independent
+no-restore Release build and execution pass 38 C# cases and 22 Python tests;
+bounded independent review found no significant issues. The adapter was tested
+only with fake transport, including composed service/replay behavior. No
+authenticated HTTP host, real Cosmos validation, SDK dispatch or deployment
+is claimed. See [the implementation boundaries](./docs/development.md).
+
+The next offline slice connects admitted commands to authorized status reads
+and ETag-conditional runner outcomes, with retained observation/reconciliation
+references and terminal-result protection. Independent validation passes
+44 C# cases with a clean no-restore Release build. An evidence-binding review
+finding was fixed and independently rechecked. This is a tested application
+service flow, not an authenticated HTTP host, actual runner/SDK integration
+or real-cloud evidence. Restricted role/history reads were not retried.
+
+The HTTP boundary slice adds an ASP.NET Core endpoint library for message
+submission and command status, using the installed shared framework. It
+requires explicit named authentication, server-side run/role resolution and
+an approved protected-payload store; no permissive implementations are shipped.
+Independent validation passes 52 C# cases, including eight real loopback HTTP
+cases, plus 22 Python tests; independent review found no significant issues.
+New project assets were generated with package feeds cleared and auditing
+enabled, without package downloads. Tests use synthetic identity/backends;
+production host/identity configuration, durable role/lease adapters and actual
+runner/SDK delivery remain open. No cloud deployment or restricted role/history
+read was attempted.

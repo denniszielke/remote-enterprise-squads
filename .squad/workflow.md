@@ -15,16 +15,17 @@ Isolated work, independent review, and evidence-based completion are non-negotia
 
 ## Ceremonies
 
-- **Planning** — chaired by Steve; sets sequencing and accountable owners for the cycle.
+- **Planning** — chaired by Danny; sets program priorities, milestone scope and accountable owners with Steve and component owners. Steve owns technical sequencing, feasibility and engineering decomposition.
+- **Scope and decision review** — chaired by Danny; records options, recommendation, accountable decision owner, scope/acceptance impact and disposition. Danny resolves delivery trade-offs within approved scope; Steve decides technical architecture/contracts. Material scope changes, spending, deployment authorization, privacy/retention policy and release approval go to the human sponsor; no governance or evidence gate is waived.
 - **Contract review** — chaired by Steve; reviews cross-component contracts (event schema, control-plane ↔ runner API, AHP/ACP boundaries) before implementation starts.
 - **Infrastructure What-If** — owned by Basher; every infra change is reviewed against a `what-if` diff before it is applied.
 - **Security review** — owned by Linus; required for every security-sensitive change platform-wide, regardless of implementer.
 - **Integration demonstration** — owned by Livingston; demonstrates the verified capability end-to-end with evidence before sign-off.
-- **Sprint-close** — all agents participate; Scribe records outcomes, decisions, and evidence trails for the cycle.
+- **Sprint-close** — chaired by Danny; all agents participate; Scribe records outcomes, decisions, and evidence trails for the cycle. Completion remains subject to independent verification and review.
 
 ## Delivery sequencing
 
-Per Steve's charter, future delivery is sequenced in this order and is recorded centrally here as the team's shared plan:
+Danny manages program milestones and priorities within approved scope and Steve's technical sequencing. The shared delivery order remains:
 
 1. Landing zone and trusted builds
 2. One steerable, governed squad

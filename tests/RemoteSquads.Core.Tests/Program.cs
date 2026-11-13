@@ -14,6 +14,95 @@ Command Accepted() => Command.Accept("command-1",
 
 var tests = new (string Name, Action Run)[]
 {
+    ("Writer leases reject competing starts and conditional renewal conflicts", () =>
+    {
+        var scope = new TeamScope("project-1", "team-1");
+        var empty = new TeamLease(scope, now);
+        var lease = empty.Acquire("run-1", 0, now, TimeSpan.FromMinutes(1));
+        Equal(1L, lease.Generation);
+        Equal(1L, lease.Version);
+        Check(empty.HolderRunId is null);
+        lease.RequireWriter(scope, "run-1", 1, now);
+        Error("team_writer_conflict", () => lease.Acquire("run-2", 1, now, TimeSpan.FromMinutes(1)));
+        Error("version_conflict", () => lease.Renew("run-1", 1, 0, now, TimeSpan.FromMinutes(2)));
+        Error("lease_fenced", () => lease.Renew("other-run", 1, 1, now, TimeSpan.FromMinutes(2)));
+        Error("lease_fenced", () => lease.Renew("run-1", 2, 1, now, TimeSpan.FromMinutes(2)));
+        Error("invalid_request", () => lease.Renew("run-1", 1, 1, now, TimeSpan.FromSeconds(30)));
+        var renewed = lease.Renew("run-1", 1, 1, now.AddSeconds(10), TimeSpan.FromMinutes(1));
+        Equal(1L, renewed.Generation);
+        Equal(2L, renewed.Version);
+        Equal(now.AddSeconds(70), renewed.ExpiresAt!.Value);
+    }),
+    ("Expired writers stay fenced until bound process and side-effect settlement", () =>
+    {
+        var scope = new TeamScope("project-1", "team-1");
+        var lease = new TeamLease(scope, now).Acquire("run-1", 0, now, TimeSpan.FromSeconds(60));
+        var expiry = now.AddSeconds(60);
+        var evidence = new WriterSettlement("run-1", 1, "settlement-1", true, true);
+        Error("lease_fenced", () => lease.RequireWriter(scope, "run-1", 1, expiry));
+        Error("lease_fenced", () => lease.RequireWriter(new("other-project", "team-1"), "run-1", 1, now));
+        Error("lease_fenced", () => lease.RequireWriter(new("project-1", "other-team"), "run-1", 1, now));
+        Error("lease_fenced", () => lease.Renew("run-1", 1, 1, expiry, TimeSpan.FromMinutes(1)));
+        Error("reconciliation_required", () => lease.Acquire("run-2", 1, expiry, TimeSpan.FromMinutes(1)));
+        foreach (var invalid in new[] { evidence with { OldProcessesContained = false },
+            evidence with { SideEffectsReconciled = false } })
+            Error("reconciliation_required", () => lease.Acquire("run-2", 1, expiry, TimeSpan.FromMinutes(1), invalid));
+        foreach (var invalid in new[] { evidence with { RunId = "other" }, evidence with { Generation = 2 } })
+            Error("lease_fenced", () => lease.Acquire("run-2", 1, expiry, TimeSpan.FromMinutes(1), invalid));
+        Error("invalid_request", () => lease.Acquire("run-2", 1, expiry, TimeSpan.FromMinutes(1),
+            evidence with { EvidenceReference = " " }));
+        var successor = lease.Acquire("run-2", 1, expiry, TimeSpan.FromMinutes(1), evidence);
+        Equal(2L, successor.Generation);
+        Equal("settlement-1", successor.SettlementReference!);
+        successor.RequireWriter(scope, "run-2", 2, expiry);
+        Error("lease_fenced", () => successor.RequireWriter(scope, "run-1", 1, expiry));
+        Error("version_conflict", () => successor.Acquire("run-3", 1, expiry, TimeSpan.FromMinutes(1), evidence));
+        var restarted = lease.Acquire("run-1", 1, expiry, TimeSpan.FromMinutes(1), evidence);
+        Equal(2L, restarted.Generation);
+    }),
+    ("Lease timestamps and durations fail explicitly at invalid boundaries", () =>
+    {
+        var lease = new TeamLease(new("project", "team"), now);
+        Error("invalid_request", () => lease.Acquire("run", 0, now, TimeSpan.Zero));
+        Error("invalid_request", () => lease.Acquire("run", 0, now, TimeSpan.FromSeconds(-1)));
+        Error("invalid_request", () => lease.Acquire("run", 0, DateTimeOffset.MaxValue, TimeSpan.FromTicks(1)));
+        Error("invalid_request", () => lease.Acquire("run", 0, now.AddTicks(-1), TimeSpan.FromMinutes(1)));
+        Error("invalid_request", () => lease.Acquire("run", 0, now.ToOffset(TimeSpan.FromHours(1)), TimeSpan.FromMinutes(1)));
+        Error("invalid_request", () => lease.Acquire(" ", 0, now, TimeSpan.FromMinutes(1)));
+    }),
+    ("Idempotency retries bind scope semantic payload and schema, not transport IDs", () =>
+    {
+        var scope = new IdempotencyScope("subject", "client", "project", "steer", "run");
+        var fingerprint = new RequestFingerprint(1, "sha256:" + new string('a', 64));
+        var record = new IdempotencyRecord(scope, "key", fingerprint, "command-1", now, now.AddHours(1));
+        Equal("command-1", record.Replay(new("subject", "client", "project", "steer", "run"),
+            "key", new(1, fingerprint.PayloadDigest), now.AddMinutes(1)));
+        Error("idempotency_mismatch", () => record.Replay(scope, "key", new(2, fingerprint.PayloadDigest), now));
+        Error("idempotency_mismatch", () => record.Replay(scope, "key", new(1, "sha256:" + new string('b', 64)), now));
+        foreach (var other in new[] {
+            new IdempotencyScope("other", "client", "project", "steer", "run"),
+            new("subject", "other", "project", "steer", "run"),
+            new("subject", "client", "other", "steer", "run"),
+            new("subject", "client", "project", "other", "run"),
+            new("subject", "client", "project", "steer", "other") })
+            Error("resource_not_found", () => record.Replay(other, "key", fingerprint, now));
+        Error("resource_not_found", () => record.Replay(scope, "other", fingerprint, now));
+        Error("reconciliation_required", () => record.Replay(scope, "key", fingerprint, now.AddHours(1)));
+        Error("invalid_request", () => record.Replay(scope, "key", fingerprint, now.AddTicks(-1)));
+        Error("invalid_request", () => record.Replay(scope, "key", fingerprint, now.ToOffset(TimeSpan.FromHours(1))));
+    }),
+    ("Idempotency bindings reject malformed fingerprints and retry windows", () =>
+    {
+        foreach (var invalid in new[] { "sha256:" + new string('A', 64), "sha256:" + new string('g', 64),
+            "sha256:" + new string('a', 63), "other:" + new string('a', 64), " " })
+            Error("invalid_request", () => new RequestFingerprint(1, invalid));
+        var fingerprint = new RequestFingerprint(1, "sha256:" + new string('a', 64));
+        var scope = new IdempotencyScope("subject", "client", "project", "start", "team");
+        Error("invalid_request", () => new RequestFingerprint(0, fingerprint.PayloadDigest));
+        Error("invalid_request", () => new IdempotencyRecord(scope, "key", fingerprint, "run", now, now));
+        Error("invalid_request", () => new IdempotencyRecord(scope, " ", fingerprint, "run", now, now.AddHours(1)));
+        Error("invalid_request", () => new IdempotencyRecord(scope, "key", fingerprint, " ", now, now.AddHours(1)));
+    }),
     ("Recipients validate pinned membership and copied team data", () =>
     {
         var members = new List<string> { "member-1" };
@@ -188,6 +277,9 @@ var tests = new (string Name, Action Run)[]
         Equal(RunState.Stopping, RunLifecycle.Requested().Stop().State);
     })
 };
+
+tests = [.. tests, .. CommandAdmissionTests.Cases, .. CosmosControlDocumentStoreTests.Cases,
+    .. CommandEndpointTests.Cases, .. RunnerDeliveryTests.Cases];
 
 int failures = 0;
 foreach (var (name, run) in tests)

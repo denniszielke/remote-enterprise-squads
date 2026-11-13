@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Build and exercise the dependency-free .NET core with no package sources."""
+"""Build and exercise the core and HTTP boundary with no package sources."""
 
 import os
 from pathlib import Path
@@ -15,6 +15,7 @@ ROOT = Path(__file__).resolve().parents[1]
 PROJECTS = (
     ROOT / "src/RemoteSquads.Core/RemoteSquads.Core.csproj",
     ROOT / "tests/RemoteSquads.Core.Tests/RemoteSquads.Core.Tests.csproj",
+    ROOT / "src/RemoteSquads.ControlPlane/RemoteSquads.ControlPlane.csproj",
 )
 TEST_PROJECT = PROJECTS[1]
 TIMEOUT_SECONDS = 120
